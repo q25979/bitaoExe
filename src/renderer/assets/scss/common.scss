@@ -1,0 +1,91 @@
+// 定义
+$px: ys;
+$border: 1px solid #DCDFE6;
+$width: 800px;
+$height: 600px;
+$titleBackground: #303133;
+$themeBackground: #409EFF;
+$titleColor: $titleBackground;
+$themeColor: #606266;
+$assistColor: #909399;
+$warnColor: #E6A23C;
+$dangerColor: #F56C6C;
+$successColor: #67C23A;
+$titleSize: 18px;
+$themeSize: 14px;
+$assistSize: 12px;
+
+body {
+  font-family: "Microsoft YaHei","微软雅黑","PingFang-SC-Medium","Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB",sans-serif;
+  font-size: $themeSize;
+  color: $themeColor;
+  max-height: $height;
+  max-width: $width;
+}
+body, ul, li {
+  padding: 0;
+  margin: 0;
+}
+ul, li {
+  list-style: none;
+}
+a {
+  text-decoration: none;
+  color: $themeColor;
+}
+
+.#{$px}-container {
+  margin: 0 auto;
+}
+
+.#{$px}-box-shadow {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .12);
+}
+
+.#{$px}-cursor-pointer {
+  cursor: pointer;
+}
+
+// 字體顏色
+.#{$px}-warn-color {
+  color: $warnColor;
+}
+.#{$px}-danger-color {
+  color: $dangerColor;
+}
+.#{$px}-success-color {
+  color: $successColor;
+}
+
+// 浮动
+.#{$px}-clearfix:after {
+  height: 0;
+  display: block;
+  content: "";
+  clear: both;
+  overflow: hidden;
+  visibility: hidden;
+}
+.#{$px}-fl {
+  float: left;
+}
+.#{$px}-fr {
+  float: right;
+}
+
+// 邊距
+.#{$px}-mlr__5 {
+  margin: 0 5px;
+}
+.#{$px}-mlr__10 {
+  margin: 0 10px;
+}
+.#{$px}-mtb__10 {
+  margin: 10px 0;
+}
+.#{$px}-mt__10 {
+  margin-top: 10px;
+}
+.#{$px}-mb__10 {
+  margin-bottom: 10px;
+}
