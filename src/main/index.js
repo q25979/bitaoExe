@@ -23,7 +23,8 @@ function createWindow () {
     useContentSize: true,
     height: 600,
     width: 1000,
-    resizable: true
+    resizable: true,
+    webPreferences: { webSecurity: false }
   })
 
   mainWindow.loadURL(winURL)

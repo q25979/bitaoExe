@@ -11,9 +11,9 @@
       height: 100%;
       .box {
         width: 320px;
-        height: 300px;
+        height: 250px;
         background: white;
-        margin: 80px auto;
+        margin: 120px auto;
         border-radius: 5px;
         padding: 30px;
         .title {
@@ -54,13 +54,13 @@
 <template>
   <div id="login">
     <div class="center ys-container">
-      <div class="box">
+      <div class="box" v-loading="loading">
         <h1 class="title">輔助登錄</h1>
         <el-form :model="loginForm" :rules="loginRules" ref="loginForm">
-          <el-form-item prop="username">
+          <el-form-item prop="email">
             <el-input
               placeholder="請輸入登錄賬號"
-              v-model="loginForm.username"
+              v-model="loginForm.email"
               clear>
             </el-input>
           </el-form-item>
@@ -71,16 +71,6 @@
               type="password"
               clear>
             </el-input>
-          </el-form-item>
-          <el-form-item class="code" prop="code">
-            <el-input
-              placeholder="請輸入驗證碼"
-              v-model="loginForm.code"
-              clear>
-            </el-input>
-            <div class="code-img" @click="codeChange">
-              <img src="http://www.xiaobaixitong.com/d/file/help/2018-08-06/f15ce5d652d8da38e9e0e384f35b39d7.png" alt="驗證碼">
-            </div>
           </el-form-item>
           <el-form-item>
             <el-button
@@ -97,36 +87,53 @@
 </template>
 
 <script>
+  import { login } from '@/fetch/common.js'
+
   export default {
     name: 'login',
     data () {
       return {
         loginForm: {
-          username: '',
-          password: '',
-          code: ''
+          email: '2668056580@qq.com',
+          password: 'Aa123123'
         },
+        loading: false,
         loginRules: {
-          username: [
+          email: [
             { required: true, message: '登錄賬號不能為空', trigger: 'blur' },
             { min: 6, message: '登錄賬號不能少於6位數', trigger: 'blur' }
           ],
           password: [
             { required: true, message: '登錄密碼不能為空', trigger: 'blur' },
             { min: 6, message: '登錄密碼格式錯誤', trigger: 'blur' }
-          ],
-          code: [
-            { required: true, message: '驗證碼不能為空', trigger: 'blur' }
           ]
         }
       }
+    },
+    components: {
     },
     methods: {
       // 登錄提交
       loginSumit (loginForm) {
         this.$refs[loginForm].validate((valid) => {
           if (valid) {
-            this.$router.push('/index')
+            this.loading = true
+            login(this.loginForm)
+              .then(res => {
+                this.loading = false
+                if (res.code === 200) {
+                  this.$message({ type: 'success', message: res.msg, showClose: true })
+                  localStorage.setItem('__TOKEN__', res.token)
+                  this.$router.push('/index')
+                } else {
+                  this.$message({ type: 'warning', message: res.msg, showClose: true })
+                }
+              })
+              .catch(err => {
+                console.log('err:', err)
+                this.$message.error('網絡超時，請檢查您的網絡狀態')
+                this.loading = false
+              })
             return valid
           } else {
             return false

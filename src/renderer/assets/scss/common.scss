@@ -46,7 +46,7 @@ a {
   cursor: pointer;
 }
 
-// 字體顏色
+// 字體樣式
 .#{$px}-warn-color {
   color: $warnColor;
 }
@@ -55,6 +55,9 @@ a {
 }
 .#{$px}-success-color {
   color: $successColor;
+}
+.#{$px}-bold {
+  font-weight: bold;
 }
 
 // 浮动
@@ -88,4 +91,13 @@ a {
 }
 .#{$px}-mb__10 {
   margin-bottom: 10px;
+}
+.#{$px}-mr__5 {
+  margin-right: 5px;
+}
+.#{$px}-p__5 {
+  padding: 5px;
+}
+.#{$px}-p__10 {
+  padding: 10px;
 }

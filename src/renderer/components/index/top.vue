@@ -25,6 +25,8 @@
         <span class="ys-fl ys-mlr__10">|</span>
         <li v-if="!isActivate" class="ys-danger-color">未激活</li>
         <li v-else class="ys-success-color ys-cursor-pointer">2019-08-12 14:12:15 到期</li>
+        <span class="ys-fl ys-mlr__10">|</span>
+        <li @click="logout" class="ys-cursor-pointer">退出登錄</li>
       </ul>
     </header>
   </div>
@@ -36,6 +38,11 @@
     data () {
       return {
         isActivate: true
+      }
+    },
+    methods: {
+      logout () {
+        this.$router.push('/')
       }
     }
   }
