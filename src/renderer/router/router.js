@@ -24,7 +24,8 @@ const routerData = [
     component: require('@/components/bets/appointment').default,
     meta: {
       keepAlive: true,
-      requiresAuth: false
+      requiresAuth: false,
+      isStart: true
     }
   },
   {
@@ -33,7 +34,8 @@ const routerData = [
     component: require('@/components/bets/early').default,
     meta: {
       keepAlive: true,
-      requiresAuth: false
+      requiresAuth: false,
+      isStart: true
     }
   },
   {
@@ -42,7 +44,8 @@ const routerData = [
     component: require('@/components/bets/base').default,
     meta: {
       keepAlive: true,
-      requiresAuth: false
+      requiresAuth: false,
+      isStart: true
     }
   }
 ]

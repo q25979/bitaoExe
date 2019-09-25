@@ -9,3 +9,13 @@ export const login = (params) => {
 export const isUserInfo = () => {
   return fetchTokenGet('/Home/AssistIndex/isEndUser')
 }
+
+// 獲取交易歷史
+export const getDealLog = (params) => {
+  return fetchTokenGet('/Home/AssistIndex/getdeallog', params)
+}
+
+// 獲取用戶信息
+export const getUserInfo = () => {
+  return fetchTokenGet('/Home/AssistIndex/getUserInfo')
+}

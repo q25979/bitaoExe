@@ -23,8 +23,8 @@
       <ul class="ys-fr ys-clearfix">
         <li>您好，671</li>
         <span class="ys-fl ys-mlr__10">|</span>
-        <li v-if="!isActivate" class="ys-danger-color">未激活</li>
-        <li v-else class="ys-success-color ys-cursor-pointer">2019-08-12 14:12:15 到期</li>
+        <li v-if="!isActivate" class="ys-danger-color">{{time}}</li>
+        <li v-else class="ys-success-color ys-cursor-pointer">{{time}} 到期</li>
         <span class="ys-fl ys-mlr__10">|</span>
         <li @click="logout" class="ys-cursor-pointer">退出登錄</li>
       </ul>
@@ -33,16 +33,42 @@
 </template>
 
 <script>
+  import { getUserInfo } from '@/fetch/common.js'
+
   export default {
     name: 'top',
     data () {
       return {
-        isActivate: true
+        isActivate: true,
+        time: ''
       }
     },
+    created () {
+      this.getInfo()
+    },
     methods: {
+      // 註銷
       logout () {
-        this.$router.push('/')
+        this.$confirm('確定退出賬號？', '提示', {
+          confirmButtonText: '確定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$router.push('/')
+        }).catch(() => {})
+      },
+
+      // 獲取用戶信息
+      getInfo () {
+        getUserInfo()
+          .then(res => {
+            this.time = res.time
+            this.isActivate = res.activate
+          })
+          .catch(err => {
+            console.log('err:', err)
+            this.$message({ type: 'warning', message: '獲取用戶信息失敗，請聯繫客服' })
+          })
       }
     }
   }

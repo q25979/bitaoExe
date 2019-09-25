@@ -85,7 +85,7 @@ export const fetchTokenGet = (url, params) => {
       method: 'get',
       url: host + url,
       headers: { 'token': localStorage.getItem('__TOKEN__') },
-      data: params
+      params: params
     }).then(response => {
       resolve(response.data)
     }).catch((err) => {

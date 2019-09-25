@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '@/store'
 
 // 路由数据
 import routers from './router'
@@ -38,7 +39,16 @@ router.beforeEach((to, from, next) => {
         Message.error('請求超時，請檢查您網絡狀態')
       })
   } else {
-    next()
+    if (to.matched.some(record => record.meta.isStart)) {
+      // 攔截是否在啟動外掛中
+      if (store.state.status.isStart) {
+        Message.warning({ message: '外掛正在運行中，請先停止外掛', showClose: true })
+      } else {
+        next()
+      }
+    } else {
+      next()
+    }
   }
 })
 

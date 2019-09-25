@@ -61,7 +61,7 @@
         betsRules: {
           bet_number: [
             { required: true, message: '請輸入下注期數', trigger: 'blur' },
-            { pattern: /^[1-9]$|^[1-2][0-9]$|30/, message: '下注期數設置有誤，請重新輸入', trigger: 'blur' }
+            { pattern: /^[1-9]$|^[1-2][0-9]$|^30$/, message: '下注期數設置最多30期，請重新輸入', trigger: 'blur' }
           ],
           money: [
             { required: true, message: '請輸入下注金額', trigger: 'blur' },
@@ -74,19 +74,43 @@
       }
     },
     components: { top },
-    created () {
-      console.log(this.$route)
+    mounted () {
+      this.init()
+    },
+    watch: {
+      '$route': 'init'
     },
     methods: {
       // 投注提交
       betsSubmit () {
         this.$refs['betsFrom'].validate((valid) => {
           if (valid) {
-            console.log('提交')
+            let token = localStorage.getItem('__TOKEN__')
+            if (token === null || token === 'null') {
+              this.$message({ type: 'warning', message: '登錄狀態不存在，請登錄賬號再進行操作', showClose: true })
+            } else {
+              localStorage.setItem(token + '_base', JSON.stringify(this.betsFrom))
+              this.$message.success({ message: '數據設置成功', showClose: true })
+            }
           } else {
             return false
           }
         })
+      },
+
+      // 初始化數據
+      init () {
+        this.$refs['betsFrom'].resetFields()
+        let token = localStorage.getItem('__TOKEN__')
+
+        if (token === null || token === 'null') {
+          this.$message({ type: 'warning', message: '登錄狀態不存在，請登錄賬號再進行操作', showClose: true })
+        } else {
+          let data = localStorage.getItem(token + '_base')
+          if (data !== null && data !== 'null') {
+            this.betsFrom = JSON.parse(data)
+          }
+        }
       }
     }
   }
