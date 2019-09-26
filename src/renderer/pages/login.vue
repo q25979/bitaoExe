@@ -112,6 +112,9 @@
     },
     components: {
     },
+    created () {
+      this.isToken()
+    },
     methods: {
       // 登錄提交
       loginSumit (loginForm) {
@@ -144,6 +147,14 @@
       // 驗證碼更換
       codeChange () {
         console.log('驗證碼更換')
+      },
+
+      // 判断是否存在 TOKEN
+      isToken () {
+        let token = localStorage.getItem('__TOKEN__')
+        if (token !== null && token !== 'null') {
+          this.$router.push('/index')
+        }
       }
     }
   }

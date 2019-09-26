@@ -54,6 +54,8 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          this.$store.dispatch('updateStartStatus', false)
+          localStorage.removeItem('__TOKEN__')
           this.$router.push('/')
         }).catch(() => {})
       },

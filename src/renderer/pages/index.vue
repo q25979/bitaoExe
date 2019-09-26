@@ -21,6 +21,31 @@
           }
         }
       }
+      .assist-box {
+        width: 115px;
+        position: absolute;
+        top: 88px;
+        left: 10px;
+        z-index: 1;
+        border: 1px solid #DCDFE6;
+        background: white;
+        text-align: center;
+        border-radius: 4px;
+        ul {
+          li {
+            height: 40px;
+            line-height: 40px;
+            cursor: pointer;
+            &:nth-child(2) {
+              padding: 0;
+            }
+            &:hover {
+              color: white;
+              background: #E6A23C;
+            }
+          }
+        }
+      }
     }
   }
 </style>
@@ -34,6 +59,13 @@
         <router-link tag="el-button" to="/appointment">預約下注</router-link>
         <router-link tag="el-button" to="/early">預警倍投</router-link>
         <router-link tag="el-button" to="/base">普通倍投</router-link>
+      </div>
+      <div class="assist-box" v-if="startStatus">
+        <ul>
+          <li @click="startList(1)">預約下注</li>
+          <li @click="startList(2)">預警倍投</li>
+          <li @click="startList(3)">普通倍投</li>
+        </ul>
       </div>
       <div class="bets-record">
         <div class="title ys-p__10">
@@ -107,6 +139,7 @@
     data () {
       return {
         isStartText: '啟動外掛',
+        startStatus: false,
         betsList: [],
         optionData: {
           page: 1,
@@ -161,9 +194,17 @@
 
       // 啟動外掛
       start () {
-        this.$store.dispatch('updateStartStatus', !this.$store.state.status.isStart)
-        console.log(this.$store.state)
-        return false
+        var bStart = this.$store.state.status.isStart
+        if (bStart) {
+          this.$store.dispatch('updateStartStatus', false)
+        } else {
+          this.startStatus = !this.startStatus
+        }
+      },
+
+      startList (index) {
+        console.log(index)
+        this.startStatus = false
       },
 
       // 判斷外掛是否在啟動中
