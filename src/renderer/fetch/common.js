@@ -1,4 +1,4 @@
-import { fetchPost, fetchTokenGet } from './api'
+import { fetchPost, fetchTokenGet, fetchTokenPost } from './api'
 
 // 登錄接口
 export const login = (params) => {
@@ -18,4 +18,9 @@ export const getDealLog = (params) => {
 // 獲取用戶信息
 export const getUserInfo = () => {
   return fetchTokenGet('/Home/AssistIndex/getUserInfo')
+}
+
+// 下注
+export const betOrder = (params) => {
+  return fetchTokenPost('/Home/AssistIndex/betOrder', params)
 }

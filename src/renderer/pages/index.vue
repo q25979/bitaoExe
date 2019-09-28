@@ -55,7 +55,7 @@
     <top></top>
     <div class="center ys-container">
       <div class="function-btn ys-mb__10">
-        <el-button :type="$store.state.status.isStart?'danger':'success'" @click="start"><i :class="$store.state.status.isStart?'el-icon-video-pause':'el-icon-video-play'" class="ys-mr__5"></i>{{isStartText}}</el-button>
+        <el-button :type="$store.state.status.isStart?'danger':'success'" @click="start"><i :class="$store.state.status.isStart?'el-icon-video-pause':'el-icon-video-play'" class="ys-mr__5"></i>{{startText}}</el-button>
         <router-link tag="el-button" to="/appointment">預約下注</router-link>
         <router-link tag="el-button" to="/early">預警倍投</router-link>
         <router-link tag="el-button" to="/base">普通倍投</router-link>
@@ -131,14 +131,14 @@
 </template>
 
 <script>
-  import top from '@/components/index/top'
-  import { getDealLog } from '@/fetch/common.js'
+  import { getDealLog, betOrder } from '@/fetch/common.js'
 
   export default {
     name: 'index',
     data () {
       return {
-        isStartText: '啟動外掛',
+        startText: '啟動外掛',
+        startType: 1,
         startStatus: false,
         betsList: [],
         optionData: {
@@ -152,14 +152,40 @@
           buy_direction_name: '无'
         },
         balance: 0,
-        curnumber: 1
+        curnumber: 0,
+        betData: {},
+        timer: null,
+        orderTimer: null,
+        betBase: { money: 0 },
+        betEarly: { money: 0 }
       }
     },
-    components: { top },
+    components: {},
     created () {
+      clearInterval(this.orderTimer)
       this.getHistory()
+      this.orderTimer = setInterval(this.getHistory, 1000 * 60 * 2)
+      this.init()
+    },
+    watch: {
+      '$route' (val) {
+        if (val.name === 'index') {
+          this.init()
+        }
+      }
+    },
+    beforeDestroy () {
+      clearInterval(this.timer)
+      clearInterval(this.orderTimer)
     },
     methods: {
+      // 初始化
+      init () {
+        clearInterval(this.timer)
+        this.$store.dispatch('updateStartStatus', false)
+        this.startText = '啟動外掛'
+      },
+
       // 獲取交易記錄
       getHistory () {
         getDealLog(this.optionData)
@@ -196,15 +222,129 @@
       start () {
         var bStart = this.$store.state.status.isStart
         if (bStart) {
-          this.$store.dispatch('updateStartStatus', false)
+          this.$confirm('確認停止外掛?', '提示', {
+            confirmButtonText: '確認'
+          }).then(() => {
+            this.init()
+          }).catch(() => {})
         } else {
           this.startStatus = !this.startStatus
         }
       },
 
       startList (index) {
-        console.log(index)
         this.startStatus = false
+        this.startType = index
+
+        if (index === 1) {
+          this.startText = '預約下注運行中...'
+        } else if (index === 2) {
+          this.startText = '預警倍投運行中...'
+        } else if (index === 3) {
+          this.startText = '普通倍投運行中...'
+        }
+        this.$store.dispatch('updateStartStatus', true)
+        this.betOrders()
+      },
+
+      // 投注
+      betOrders () {
+        let token = localStorage.getItem('__TOKEN__')
+        var name = ''
+        var message = ''
+
+        if (token === null || token === 'null') {
+          this.$message({ type: 'warning', message: '登錄狀態不存在，請登錄賬號再進行操作', showClose: true })
+        } else {
+          if (this.startType === 1) {
+            // 預約下注
+            name = '_appoinment'
+            message = '預約下注'
+          } else if (this.startType === 2) {
+            // 預警倍投
+            name = '_early'
+            message = '預警倍投'
+            this.betEarly.money = this.betData.money
+          } else if (this.startType === 3) {
+            // 普通倍投
+            name = '_base'
+            message = '普通倍投'
+            this.betBase.money = this.betData.money
+          }
+        }
+
+        let data = localStorage.getItem(token + name)
+        if (data === null || data === 'null') {
+          this.$message({ type: 'warning', message: message + '未設置，請先設置再進行操作', showClose: true })
+        } else {
+          try {
+            this.betData = JSON.parse(data)
+          } catch (err) {
+            this.$message({ type: 'warning', message: message + '設置錯誤，請重新設置', showClose: true })
+            return 0
+          }
+        }
+        this.betConfirm()
+      },
+
+      // 確認投注
+      betConfirm () {
+        // 5分鐘一次
+        clearInterval(this.timer)
+        this.timerFunc()
+        this.timer = setInterval(this.timerFunc, 1000 * 60 * 5)
+      },
+
+      // 延時函數
+      timerFunc () {
+        console.log(this.betData.bet_number + '---' + new Date())
+        this.betData.bet_number--
+        if (parseInt(this.betData.bet_number) <= 0) {
+          this.init()
+          this.$alert('外掛已執行完成', '提示', { type: 'success' })
+        } else {
+          // 下單
+          if (this.startType === 2) {
+            // 預警倍投
+
+          } else if (this.startType === 3) {
+            // 普通倍投
+            // if (this.prevdata === 'null' || this.prevdata === null) {
+            //   console.log('直接下注')
+            // } else {
+            //   if (parseInt(this.prevdata.last_direction) !== parseInt(this.prevdata.buy_direction) &&
+            //     parseInt(this.prevdata.last_direction) !== -1) {
+            //     this.betData.money = parseFloat(this.betData.money) * 3
+            //   } else {
+            //     this.betData.money = this.betBase.money
+            //   }
+            //   console.log(this.betData)
+            // }
+          } else {
+            // 預約下注
+            this.betRequset()
+          }
+        }
+      },
+
+      // 投注請求
+      betRequset () {
+        betOrder(this.betData)
+          .then(res => {
+            console.log(res)
+            if (res.code === 200) {
+              this.$message.success(res.msg)
+              this.getHistory()
+            } else {
+              this.$alert(res.msg, '外掛出現錯誤', { type: 'error' })
+              this.init()
+            }
+          })
+          .catch(err => {
+            console.log('err:', err)
+            this.$alert('外掛下單錯誤，已停止運行如果多次發生此類情況請聯繫客服處理', '外掛出現錯誤', { type: 'error' })
+            this.init()
+          })
       },
 
       // 判斷外掛是否在啟動中

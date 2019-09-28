@@ -11,7 +11,6 @@
 
 <template>
   <div id="early">
-    <top></top>
     <div class="center ys-container">
       <h1>預警倍投</h1>
       <el-form label-width="80px" :model="betsFrom" :rules="betsRules" ref="betsFrom">
@@ -39,8 +38,8 @@
             type="number">
           </el-input>
         </el-form-item>
-        <el-form-item label="下注方向" prop="direction">
-          <el-select placeholder="請選擇下注方向" v-model="betsFrom.direction">
+        <el-form-item label="下注方向" prop="buy_direction">
+          <el-select placeholder="請選擇下注方向" v-model="betsFrom.buy_direction">
             <el-option label="漲" value="0"></el-option>
             <el-option label="跌" value="1"></el-option>
           </el-select>
@@ -50,6 +49,11 @@
           <router-link to="index" tag="el-button">返回首頁</router-link>
         </el-form-item>
       </el-form>
+      <div class="tips">
+        <h3>溫馨提示</h3>
+        <p>1.倍投方式如當前購買的方向不正確，則下一期為當前期金額的3倍，如果中獎之後則會重置為開始金額；</p>
+        <p>2.當購買的連續几期未中獎之後，將預警。</p>
+      </div>
     </div>
   </div>
 </template>
@@ -64,7 +68,7 @@
         betsFrom: {
           bet_number: '',
           money: '',
-          direction: '',
+          buy_direction: '',
           early: ''
         },
         betsRules: {
@@ -76,7 +80,7 @@
             { required: true, message: '請輸入下注金額', trigger: 'blur' },
             { pattern: /^[1-9]\d{2,}$/, message: '下注金額設置有誤，請重新輸入', trigger: 'blur' }
           ],
-          direction: [
+          buy_direction: [
             { required: true, message: '下注方向不能為空', trigger: 'blur' }
           ],
           early: [
@@ -91,7 +95,11 @@
       this.init()
     },
     watch: {
-      '$route': 'init'
+      '$route' (val) {
+        if (val.name === 'early') {
+          this.init()
+        }
+      }
     },
     methods: {
       // 投注提交

@@ -6,7 +6,8 @@ const routerData = [
     component: require('@/pages/login').default,
     meta: {
       keepAlive: true,
-      requiresAuth: false
+      requiresAuth: false,
+      top: false
     }
   },
   {
@@ -15,7 +16,8 @@ const routerData = [
     component: require('@/pages/index').default,
     meta: {
       keepAlive: true,
-      requiresAuth: false
+      requiresAuth: false,
+      top: true
     }
   },
   {
@@ -25,7 +27,8 @@ const routerData = [
     meta: {
       keepAlive: true,
       requiresAuth: false,
-      isStart: true
+      isStart: true,
+      top: true
     }
   },
   {
@@ -35,7 +38,8 @@ const routerData = [
     meta: {
       keepAlive: true,
       requiresAuth: false,
-      isStart: true
+      isStart: true,
+      top: true
     }
   },
   {
@@ -45,7 +49,8 @@ const routerData = [
     meta: {
       keepAlive: true,
       requiresAuth: false,
-      isStart: true
+      isStart: true,
+      top: true
     }
   }
 ]
