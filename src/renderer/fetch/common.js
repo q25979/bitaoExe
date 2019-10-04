@@ -24,3 +24,8 @@ export const getUserInfo = () => {
 export const betOrder = (params) => {
   return fetchTokenPost('/Home/AssistIndex/betOrder', params)
 }
+
+// 获取上五期记录
+export const getFiveLog = () => {
+  return fetchTokenGet('/Home/AssistIndex/fiveInfo')
+}

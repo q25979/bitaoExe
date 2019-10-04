@@ -55,7 +55,12 @@
     <top></top>
     <div class="center ys-container">
       <div class="function-btn ys-mb__10">
-        <el-button :type="$store.state.status.isStart?'danger':'success'" @click="start"><i :class="$store.state.status.isStart?'el-icon-video-pause':'el-icon-video-play'" class="ys-mr__5"></i>{{startText}}</el-button>
+        <el-button
+          :type="$store.state.status.isStart?'danger':'success'"
+          event.cancelBubble="true"
+          @click="start">
+          <i :class="$store.state.status.isStart?'el-icon-video-pause':'el-icon-video-play'" class="ys-mr__5"></i>{{startText}}
+        </el-button>
         <router-link tag="el-button" to="/appointment">預約下注</router-link>
         <router-link tag="el-button" to="/early">預警倍投</router-link>
         <router-link tag="el-button" to="/base">普通倍投</router-link>
@@ -131,7 +136,7 @@
 </template>
 
 <script>
-  import { getDealLog, betOrder } from '@/fetch/common.js'
+  import { getDealLog, betOrder, getFiveLog } from '@/fetch/common.js'
 
   export default {
     name: 'index',
@@ -184,6 +189,10 @@
         clearInterval(this.timer)
         this.$store.dispatch('updateStartStatus', false)
         this.startText = '啟動外掛'
+
+        document.body.onclick = () => {
+          this.startStatus = false
+        }
       },
 
       // 獲取交易記錄
@@ -219,7 +228,9 @@
       },
 
       // 啟動外掛
-      start () {
+      start (event) {
+        event.stopPropagation()
+
         var bStart = this.$store.state.status.isStart
         if (bStart) {
           this.$confirm('確認停止外掛?', '提示', {
@@ -264,12 +275,10 @@
             // 預警倍投
             name = '_early'
             message = '預警倍投'
-            this.betEarly.money = this.betData.money
           } else if (this.startType === 3) {
             // 普通倍投
             name = '_base'
             message = '普通倍投'
-            this.betBase.money = this.betData.money
           }
         }
 
@@ -279,6 +288,8 @@
         } else {
           try {
             this.betData = JSON.parse(data)
+            this.betEarly = JSON.parse(data)
+            this.betBase = JSON.parse(data)
           } catch (err) {
             this.$message({ type: 'warning', message: message + '設置錯誤，請重新設置', showClose: true })
             return 0
@@ -297,11 +308,9 @@
 
       // 延時函數
       timerFunc () {
-        console.log(this.betData.bet_number + '---' + new Date())
-        this.betData.bet_number--
         if (parseInt(this.betData.bet_number) <= 0) {
           this.init()
-          this.$alert('外掛已執行完成', '提示', { type: 'success' })
+          this.$alert('外掛已執行完畢', '提示', { type: 'success' })
         } else {
           // 下單
           if (this.startType === 2) {
@@ -309,22 +318,41 @@
 
           } else if (this.startType === 3) {
             // 普通倍投
-            // if (this.prevdata === 'null' || this.prevdata === null) {
-            //   console.log('直接下注')
-            // } else {
-            //   if (parseInt(this.prevdata.last_direction) !== parseInt(this.prevdata.buy_direction) &&
-            //     parseInt(this.prevdata.last_direction) !== -1) {
-            //     this.betData.money = parseFloat(this.betData.money) * 3
-            //   } else {
-            //     this.betData.money = this.betBase.money
-            //   }
-            //   console.log(this.betData)
-            // }
+            if (parseInt(this.betData.bet_number) === parseInt(this.betBase.bet_number)) {
+              this.betRequset()
+            } else {
+              this.getFiveInfo((res) => {
+                if (res.data.length > 0) {
+                  if (parseFloat(res.data[0].last_money) <= 0) {
+                    this.betData.money = parseFloat(this.betData.money) * 3
+                  } else {
+                    this.betData.money = this.betBase.money
+                  }
+                  this.betRequset()
+                }
+              })
+            }
           } else {
             // 預約下注
             this.betRequset()
           }
         }
+      },
+
+      // 獲取五期記錄
+      getFiveInfo (callback) {
+        getFiveLog()
+          .then(res => {
+            if (res.code === 200) {
+              callback(res)
+            } else {
+              this.$alert('外掛出現錯誤，已停止運行如果多次發生此類情況請聯繫客服處理', '外掛出現錯誤', { type: 'error' })
+              this.init()
+            }
+          })
+          .catch(err => {
+            console.log('獲取失敗：', err)
+          })
       },
 
       // 投注請求
@@ -333,6 +361,7 @@
           .then(res => {
             console.log(res)
             if (res.code === 200) {
+              this.betData.bet_number--
               this.$message.success(res.msg)
               this.getHistory()
             } else {
