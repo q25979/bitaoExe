@@ -16,7 +16,7 @@ const routerData = [
     component: require('@/pages/index').default,
     meta: {
       keepAlive: true,
-      requiresAuth: false,
+      requiresAuth: true,
       top: true
     }
   },

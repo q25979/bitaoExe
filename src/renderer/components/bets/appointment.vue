@@ -13,36 +13,42 @@
   <div id="appointment">
     <div class="center ys-container">
       <h1>預約下注</h1>
-      <el-form label-width="80px" :model="betsFrom" :rules="betsRules" ref="betsFrom">
-        <el-form-item label="下注期數" prop="bet_number">
-          <el-input
-            clearValidate
-            v-model="betsFrom.bet_number"
-            maxlength="2"
-            placeholder="請輸入下注期數，最多設置30期"
-            type="number">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="下注金額" prop="money">
-          <el-input
-            clearValidate
-            v-model="betsFrom.money"
-            placeholder="下注金額最低100且必須為整數"
-            type="number">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="下注方向" prop="buy_direction">
-          <el-select placeholder="請選擇下注方向" v-model="betsFrom.buy_direction">
-            <el-option label="漲" value="0"></el-option>
-            <el-option label="跌" value="1"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="betsSubmit">立即提交</el-button>
-          <router-link to="index" tag="el-button">返回首頁</router-link>
-        </el-form-item>
-      </el-form>
-      <div class="tips">
+      <table class="ys-mb__10">
+        <tr>
+          <th>期數</th>
+          <th>方向</th>
+          <th>金額</th>
+        </tr>
+        <tr v-for="(item, index) in betsList" :key="index">
+          <td>
+            <el-input
+              size="small"
+              type="number"
+              placeholder="1~288的期數"
+              maxlength="3"
+              v-model="item.bet_number">
+            </el-input>
+          </td>
+          <td>
+            <el-select size="small" v-model="item.buy_direction" placeholder="請選擇">
+              <el-option label="漲" value="0"></el-option>
+              <el-option label="跌" value="1"></el-option>
+            </el-select>
+          </td>
+          <td>
+            <el-input
+              size="small"
+              type="number"
+              placeholder="請輸入金額"
+              v-model="item.money">
+            </el-input>
+          </td>
+        </tr>
+      </table>
+      <el-button type="primary" @click="betsSubmit">保存設定</el-button>
+      <el-button @click="setBetsList">清空數據</el-button>
+      <router-link to="index" tag="el-button">返回首頁</router-link>
+      <div class="tips ys-mb__40">
         <h3>溫馨提示</h3>
         <p>1.下注期數為外掛啟動開始連續下注的期數；</p>
         <p>2.下注金額為下注多少期的金額；</p>
@@ -59,24 +65,7 @@
     name: 'appointment',
     data () {
       return {
-        betsFrom: {
-          bet_number: '',
-          money: '',
-          buy_direction: ''
-        },
-        betsRules: {
-          bet_number: [
-            { required: true, message: '請輸入下注期數', trigger: 'blur' },
-            { pattern: /^[1-9]$|^[1-2][0-9]$|^30$/, message: '下注期數設置最多30期，請重新輸入', trigger: 'blur' }
-          ],
-          money: [
-            { required: true, message: '請輸入下注金額', trigger: 'blur' },
-            { pattern: /^[1-9]\d{2,}$/, message: '下注金額設置有誤，請重新輸入', trigger: 'blur' }
-          ],
-          buy_direction: [
-            { required: true, message: '下注方向不能為空', trigger: 'blur' }
-          ]
-        }
+        betsList: []
       }
     },
     components: { top },
@@ -91,26 +80,62 @@
       }
     },
     methods: {
+      // 設置表格數據
+      setBetsList () {
+        this.betsList = []
+        for (let i = 0; i < 30; i++) {
+          let obj = {
+            bet_number: '',
+            money: '',
+            buy_direction: ''
+          }
+
+          this.betsList.push(obj)
+        }
+      },
+
       // 投注提交
       betsSubmit () {
-        this.$refs['betsFrom'].validate((valid) => {
-          if (valid) {
-            let token = localStorage.getItem('__TOKEN__')
-            if (token === null || token === 'null') {
-              this.$message({ type: 'warning', message: '登錄狀態不存在，請登錄賬號再進行操作', showClose: true })
-            } else {
-              localStorage.setItem(token + '_appoinment', JSON.stringify(this.betsFrom))
-              this.$message.success({ message: '數據設置成功', showClose: true })
-            }
-          } else {
+        for (let i in this.betsList) {
+          if (this.betsList[i].bet_number !== '' &&
+            (this.betsList[i].bet_number < 1 || this.betsList[i].bet_number > 288)) {
+            this.$message({ type: 'warning', message: '期數設置有誤，請查詢錯誤', showClose: true })
             return false
           }
-        })
+
+          if (this.betsList[i].money !== '' &&
+            !/^[1-9]\d*$/.test(this.betsList[i].money)) {
+            this.$message({ type: 'warning', message: '金額必須為大於0的整數，請查詢錯誤', showClose: true })
+            return false
+          }
+        }
+
+        // 判断是否出现重复期数
+        for (let i in this.betsList) {
+          for (let j in this.betsList) {
+            if (this.betsList[i].bet_number !== '') {
+              if (i !== j) {
+                if (this.betsList[i].bet_number === this.betsList[j].bet_number) {
+                  this.$message({ type: 'warning', message: '不能出現重複的期數', showClose: true })
+                  return false
+                }
+              }
+            }
+          }
+        }
+
+        let token = localStorage.getItem('__TOKEN__')
+        if (token === null || token === 'null') {
+          this.$message({ type: 'warning', message: '登錄狀態不存在，請登錄賬號再進行操作', showClose: true })
+        } else {
+          localStorage.setItem(token + '_appoinment', JSON.stringify(this.betsList))
+          this.$message.success({ message: '數據設置成功', showClose: true })
+        }
       },
 
       // 初始化數據
       init () {
-        this.$refs['betsFrom'].resetFields()
+        this.setBetsList()
         let token = localStorage.getItem('__TOKEN__')
 
         if (token === null || token === 'null') {
@@ -118,7 +143,7 @@
         } else {
           let data = localStorage.getItem(token + '_appoinment')
           if (data !== null && data !== 'null') {
-            this.betsFrom = JSON.parse(data)
+            this.betsList = JSON.parse(data)
           }
         }
       }

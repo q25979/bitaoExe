@@ -1,5 +1,16 @@
 <style lang="scss" scoped>
   @import '@/assets/scss/bets/style.scss';
+  .input-money {
+    width: 80px;
+    display: inline-block;
+    margin-right: 5px;
+    @for $i from 3 through 30 {
+      margin-top: 5px;
+    }
+  }
+  .el-button+.el-button {
+    margin-left: 0 !important;
+  }
 </style>
 <style lang="scss">
   .el-select-dropdown {
@@ -14,22 +25,6 @@
     <div class="center ys-container">
       <h1>預警倍投</h1>
       <el-form label-width="80px" :model="betsFrom" :rules="betsRules" ref="betsFrom">
-        <el-form-item label="下注期數" prop="bet_number">
-          <el-input
-            clearValidate
-            v-model="betsFrom.bet_number"
-            placeholder="請輸入下注期數，最多設置30期"
-            type="number">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="開始金額" prop="money">
-          <el-input
-            clearValidate
-            v-model="betsFrom.money"
-            placeholder="下注金額最低100且必須為整數"
-            type="number">
-          </el-input>
-        </el-form-item>
         <el-form-item label="預警期數" prop="early">
           <el-input
             clearValidate
@@ -38,14 +33,19 @@
             type="number">
           </el-input>
         </el-form-item>
-        <el-form-item label="下注方向" prop="buy_direction">
-          <el-select placeholder="請選擇下注方向" v-model="betsFrom.buy_direction">
-            <el-option label="漲" value="0"></el-option>
-            <el-option label="跌" value="1"></el-option>
-          </el-select>
+        <el-form-item label="下注金額">
+          <div class="input-money" v-for="(item, index) in betsFrom.moneyList">
+            <el-input
+              clearValidate
+              v-model="item.money"
+              :placeholder="'第'+(index+1)+'注'"
+              type="text">
+            </el-input>
+          </div>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="betsSubmit">立即提交</el-button>
+          <el-button type="primary" @click="betsSubmit">保存設定</el-button>
+          <el-button @click="buildMoneyList">清空數據</el-button>
           <router-link to="index" tag="el-button">返回首頁</router-link>
         </el-form-item>
       </el-form>
@@ -66,26 +66,13 @@
     data () {
       return {
         betsFrom: {
-          bet_number: '',
-          money: '',
-          buy_direction: '',
+          moneyList: '',
           early: ''
         },
         betsRules: {
-          bet_number: [
-            { required: true, message: '請輸入下注期數', trigger: 'blur' },
-            { pattern: /^[1-9]$|^[1-2][0-9]$|^30$/, message: '下注期數設置最多30期，請重新輸入', trigger: 'blur' }
-          ],
-          money: [
-            { required: true, message: '請輸入下注金額', trigger: 'blur' },
-            { pattern: /^[1-9]\d{2,}$/, message: '下注金額設置有誤，請重新輸入', trigger: 'blur' }
-          ],
-          buy_direction: [
-            { required: true, message: '下注方向不能為空', trigger: 'blur' }
-          ],
           early: [
             { required: true, message: '請設置預警期數', trigger: 'blur' },
-            { pattern: /^[1-9]$|^[1-2][0-9]$|^30$/, message: '預警期數不能超過30期', trigger: 'blur' }
+            { pattern: /^[1-9]$|^[0-9][0-9]$|^100$/, message: '預警期數1-100之間', trigger: 'blur' }
           ]
         }
       }
@@ -104,6 +91,20 @@
     methods: {
       // 投注提交
       betsSubmit () {
+        for (let i in this.betsFrom.moneyList) {
+          if (this.betsFrom.moneyList[i].money !== '' &&
+            !/^[1-9]\d*$/.test(this.betsFrom.moneyList[i].money)) {
+            this.$message({ type: 'warning', message: '金額必須為大於0的整數，請修改錯誤', showClose: true })
+            return false
+          }
+        }
+
+        if (parseInt(this.betsFrom.early) < 1 ||
+          parseInt(this.betsFrom.early) > 100) {
+          this.$message({ type: 'warning', message: '設定期數必須在1-100之間', showClose: true })
+          return false
+        }
+
         this.$refs['betsFrom'].validate((valid) => {
           if (valid) {
             let token = localStorage.getItem('__TOKEN__')
@@ -121,7 +122,7 @@
 
       // 初始化數據
       init () {
-        this.$refs['betsFrom'].resetFields()
+        this.buildMoneyList()
         let token = localStorage.getItem('__TOKEN__')
 
         if (token === null || token === 'null') {
@@ -132,6 +133,17 @@
             this.betsFrom = JSON.parse(data)
           }
         }
+      },
+
+      // 创建moneyList
+      buildMoneyList () {
+        this.betsFrom.moneyList = []
+        this.betsFrom.early = ''
+        for (let i = 0; i < 30; i++) {
+          let obj = { money: '' }
+          this.betsFrom.moneyList.push(obj)
+        }
+        console.log(this.betsFrom)
       }
     }
   }

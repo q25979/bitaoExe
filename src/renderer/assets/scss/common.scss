@@ -92,6 +92,9 @@ a {
 .#{$px}-mb__10 {
   margin-bottom: 10px;
 }
+.#{$px}-mb__40 {
+  margin-bottom: 40px;
+}
 .#{$px}-mr__5 {
   margin-right: 5px;
 }
@@ -100,4 +103,11 @@ a {
 }
 .#{$px}-p__10 {
   padding: 10px;
+}
+
+.#{$px}_dangerColor {
+  color: $dangerColor;
+}
+.#{$px}_successColor {
+  color: $successColor;
 }

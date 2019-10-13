@@ -76,9 +76,9 @@
         <div class="title ys-p__10">
           <span class="ys-bold">下注記錄</span>
           <ul class="ys-fr ys-clearfix">
-            <li>賬戶餘額：{{parseFloat(balance).toFixed(2)}}</li>
+            <li>賬戶餘額：<span class="ys_dangerColor">{{parseFloat(balance).toFixed(2)}}</span></li>
             <span>|</span>
-            <li>獲取利潤：{{parseFloat(amt).toFixed(2)}}</li>
+            <li>獲取利潤：<span class="ys_successColor">{{parseFloat(amt).toFixed(2)}}</span></li>
             <span>|</span>
             <li>當前期數：{{curnumber}}</li>
             <span>|</span>
