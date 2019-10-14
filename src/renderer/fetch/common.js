@@ -29,3 +29,8 @@ export const betOrder = (params) => {
 export const getFiveLog = () => {
   return fetchTokenGet('/Home/AssistIndex/fiveInfo')
 }
+
+// 獲取開獎記錄
+export const getOpenLog = (params) => {
+  return fetchTokenGet('/Home/AssistIndex/getOpenLog', params)
+}

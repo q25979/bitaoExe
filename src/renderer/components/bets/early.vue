@@ -49,7 +49,7 @@
           <router-link to="index" tag="el-button">返回首頁</router-link>
         </el-form-item>
       </el-form>
-      <div class="tips">
+      <div class="tips ys-mb__40">
         <h3>溫馨提示</h3>
         <p>1.倍投方式如當前購買的方向不正確，則下一期為當前期金額的3倍，如果中獎之後則會重置為開始金額；</p>
         <p>2.當購買的連續几期未中獎之後，將預警。</p>

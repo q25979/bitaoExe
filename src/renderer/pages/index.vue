@@ -136,7 +136,7 @@
 </template>
 
 <script>
-  import { getDealLog, betOrder, getFiveLog } from '@/fetch/common.js'
+  import { getDealLog, betOrder, getFiveLog, getOpenLog } from '@/fetch/common.js'
 
   export default {
     name: 'index',
@@ -159,10 +159,12 @@
         balance: 0,
         curnumber: 0,
         betData: {},
+        betBaseIndex: 0,
+        betEarlyIndex: 0,
+        betEarlyStart: false,
+        betEarlyDirection: 0,
         timer: null,
-        orderTimer: null,
-        betBase: { money: 0 },
-        betEarly: { money: 0 }
+        orderTimer: null
       }
     },
     components: {},
@@ -288,8 +290,6 @@
         } else {
           try {
             this.betData = JSON.parse(data)
-            this.betEarly = JSON.parse(data)
-            this.betBase = JSON.parse(data)
           } catch (err) {
             this.$message({ type: 'warning', message: message + '設置錯誤，請重新設置', showClose: true })
             return 0
@@ -303,39 +303,139 @@
         // 5分鐘一次
         clearInterval(this.timer)
         this.timerFunc()
-        this.timer = setInterval(this.timerFunc, 1000 * 60 * 5)
+        this.timer = setInterval(this.timerFunc, 1000 * 5 * 60)
       },
 
       // 延時函數
       timerFunc () {
-        if (parseInt(this.betData.bet_number) <= 0) {
-          this.init()
-          this.$alert('外掛已執行完畢', '提示', { type: 'success' })
+        if (this.startType === 2) {
+          // 預警倍投
+          this.earlyBet()
+        } else if (this.startType === 3) {
+          // 普通倍投
+          this.baseBet()
         } else {
-          // 下單
-          if (this.startType === 2) {
-            // 預警倍投
+          // 預約下注
+          this.appointmentBet()
+        }
+      },
 
-          } else if (this.startType === 3) {
-            // 普通倍投
-            if (parseInt(this.betData.bet_number) === parseInt(this.betBase.bet_number)) {
-              this.betRequset()
+      // 預約投注
+      appointmentBet () {
+        for (let i in this.betData) {
+          if (this.betData[i].bet_number !== '' &&
+            this.betData[i].buy_direction !== '' &&
+            this.betData[i].money !== '') {
+            if (parseInt(this.curnumber) === parseInt(this.betData[i].bet_number)) {
+              this.betRequset(this.betData[i])
+            }
+          }
+        }
+      },
+
+      // 普通倍投
+      baseBet () {
+        if (parseInt(this.curnumber) < parseInt(this.betData.bet_number)) {
+          return false
+        }
+
+        if (this.betData.moneyList[0].money === '') {
+          this.$alert('請先設置普通倍投金額', '消息提示', { type: 'warning' })
+          this.init()
+        }
+
+        if (this.betData.moneyList[this.betBaseIndex].money === '') {
+          this.betBaseIndex = 0
+        }
+
+        var betData = this.betData
+        betData.bet_number = this.curnumber
+        betData.money = this.betData.moneyList[this.betBaseIndex].money
+
+        if (this.betBaseIndex === 0) {
+          this.betRequset(betData, res => {
+            this.betBaseIndex++
+          })
+        } else {
+          this.getFiveInfo(res => {
+            if (res.data.length > 0) {
+              if (parseInt(res.data[0].last_money) > 0) {
+                this.betBaseIndex = 0
+              }
+              this.betRequset(betData, res => {
+                this.betBaseIndex++
+              })
             } else {
-              this.getFiveInfo((res) => {
-                if (res.data.length > 0) {
-                  if (parseFloat(res.data[0].last_money) <= 0) {
-                    this.betData.money = parseFloat(this.betData.money) * 3
-                  } else {
-                    this.betData.money = this.betBase.money
-                  }
-                  this.betRequset()
-                }
+              this.betBaseIndex = 0
+              this.betRequset(betData, res => {
+                this.betBaseIndex++
               })
             }
-          } else {
-            // 預約下注
-            this.betRequset()
-          }
+          })
+        }
+      },
+
+      // 預警倍投
+      earlyBet () {
+        var limit = { limit: this.betData.early }
+        var betData = { bet_number: this.curnumber }
+
+        if (this.betData.moneyList[0].money === '') {
+          this.$alert('請先設置預警倍投金額', '消息提示', { type: 'warning' })
+          this.init()
+        }
+
+        if (this.betData.moneyList[this.betBaseIndex].money === '') {
+          this.betBaseIndex = 0
+        }
+
+        if (!this.betEarlyStart) {
+          getOpenLog(limit)
+            .then(res => {
+              this.betEarlyIndex = 0
+              if (res.data.length === parseInt(this.betData.early)) {
+                this.betEarlyStart = true
+                for (let i in res.data) {
+                  if (res.data[0].last_direction !== res.data[i].last_direction) {
+                    this.betEarlyStart = false
+                  }
+                }
+
+                // 開始下注
+                if (this.betEarlyStart) {
+                  this.betEarlyDirection = parseInt(res.data[0].last_direction) === 1
+                    ? 0 : 1
+                  betData.buy_direction = this.betEarlyDirection
+                  betData.money = this.betData.moneyList[this.betEarlyIndex].money
+                  this.betRequset(betData, res => {
+                    this.betEarlyIndex++
+                  })
+                }
+              }
+            })
+            .catch(err => {
+              console.log(err)
+              this.$alert('鏈接網絡超時', '消息提示', { type: 'warning' })
+              this.init()
+            })
+        } else {
+          // 開始下注
+          this.getFiveInfo(res => {
+            if (res.data.length > 0) {
+              if (parseInt(res.data[0].last_money) > 0) {
+                this.betEarlyStart = false
+              } else {
+                betData.buy_direction = this.betEarlyDirection
+                betData.money = this.betData.moneyList[this.betEarlyIndex].money
+                this.betRequset(betData, res => {
+                  this.betEarlyIndex++
+                })
+              }
+            } else {
+              this.$alert('預警下注出錯，請重新啟動', '消息提示', { type: 'warning' })
+              this.init()
+            }
+          })
         }
       },
 
@@ -356,16 +456,15 @@
       },
 
       // 投注請求
-      betRequset () {
-        betOrder(this.betData)
+      betRequset (betData, callback) {
+        betOrder(betData)
           .then(res => {
-            console.log(res)
             if (res.code === 200) {
-              this.betData.bet_number--
               this.$message.success(res.msg)
               this.getHistory()
+              if (callback) callback(res)
             } else {
-              this.$alert(res.msg, '外掛出現錯誤', { type: 'error' })
+              this.$alert(res.msg, '消息提示', { type: 'warning' })
               this.init()
             }
           })
