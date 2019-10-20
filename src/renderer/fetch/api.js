@@ -4,6 +4,7 @@ import { Message } from 'element-ui'
 
 // 全局變量
 const host = 'https://gdb699.com'
+// const host = 'http://localhost:8001'
 
 // axios 配置
 axios.defaults.timeout = 10000

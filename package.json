@@ -22,7 +22,7 @@
     "postinstall": "npm run lint:fix"
   },
   "build": {
-    "productName": "bitao-assist",
+    "productName": "聚多幣",
     "appId": "com.example.yourapp",
     "directories": {
       "output": "build"

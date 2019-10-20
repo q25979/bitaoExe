@@ -2,7 +2,7 @@
   #login {
     text-align: center;
     .center {
-      background: url('/static/img/background.jpg') no-repeat;
+      background: url('../assets/img/background.jpg') no-repeat;
       background-size: cover;
       position: fixed;
       top: 0;
@@ -94,8 +94,8 @@
     data () {
       return {
         loginForm: {
-          email: '2668056580@qq.com',
-          password: 'Aa123123'
+          email: '',
+          password: ''
         },
         loading: false,
         loginRules: {
