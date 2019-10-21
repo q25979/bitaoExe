@@ -46,6 +46,11 @@
           }
         }
       }
+      .tips {
+        margin-top: 10px;
+        color: #353535;
+        margin-left: 10px;
+      }
     }
   }
 </style>
@@ -64,6 +69,7 @@
         <router-link tag="el-button" to="/appointment">預約下注</router-link>
         <router-link tag="el-button" to="/early">預警倍投</router-link>
         <router-link tag="el-button" to="/base">普通倍投</router-link>
+        <el-button @click="getHistory">刷新數據</el-button>
       </div>
       <div class="assist-box" v-if="startStatus">
         <ul>
@@ -131,12 +137,19 @@
           </el-pagination>
         </div>
       </div>
+      <div class="tips">{{tips}}</div>
     </div>
   </div>
 </template>
 
 <script>
-  import { getDealLog, betOrder, getFiveLog, getOpenLog } from '@/fetch/common.js'
+  import {
+    getDealLog,
+    betOrder,
+    getFiveLog,
+    getOpenLog,
+    getTips
+  } from '@/fetch/common.js'
 
   export default {
     name: 'index',
@@ -164,20 +177,21 @@
         betEarlyStart: false,
         betEarlyDirection: 0,
         timer: null,
-        orderTimer: null
+        orderTimer: null,
+        tips: ''
       }
     },
     components: {},
     created () {
-      clearInterval(this.orderTimer)
-      this.getHistory()
-      this.orderTimer = setInterval(this.getHistory, 1000 * 60 * 2)
+      this.getTipsInfo()
       this.init()
     },
     watch: {
       '$route' (val) {
         if (val.name === 'index') {
           this.init()
+        } else {
+          clearInterval(this.orderTimer)
         }
       }
     },
@@ -191,10 +205,24 @@
         clearInterval(this.timer)
         this.$store.dispatch('updateStartStatus', false)
         this.startText = '啟動外掛'
+        clearInterval(this.orderTimer)
+        this.getHistory()
+        this.orderTimer = setInterval(this.getHistory, 1000 * 60 * 2)
 
         document.body.onclick = () => {
           this.startStatus = false
         }
+      },
+
+      // 獲取提示信息
+      getTipsInfo () {
+        getTips()
+          .then(res => {
+            this.tips = res.tips
+          })
+          .catch(err => {
+            console.log('獲取提示:', err)
+          })
       },
 
       // 獲取交易記錄
@@ -286,12 +314,12 @@
 
         let data = localStorage.getItem(token + name)
         if (data === null || data === 'null') {
-          this.$message({ type: 'warning', message: message + '未設置，請先設置再進行操作', showClose: true })
+          this.$message({ type: 'warning', message: message + '未設定金額，暫停輔助', showClose: true })
         } else {
           try {
             this.betData = JSON.parse(data)
           } catch (err) {
-            this.$message({ type: 'warning', message: message + '設置錯誤，請重新設置', showClose: true })
+            this.$message({ type: 'warning', message: message + '未設定金額，暫停輔助', showClose: true })
             return 0
           }
         }
@@ -463,6 +491,8 @@
               this.$message.success(res.msg)
               this.getHistory()
               if (callback) callback(res)
+            } else if (res.code === 2000) {
+              console.log('已經購買過，無須再購買')
             } else {
               this.$alert(res.msg, '消息提示', { type: 'warning' })
               this.init()

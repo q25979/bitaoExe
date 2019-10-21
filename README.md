@@ -11,7 +11,7 @@ npm install
 # serve with hot reload at localhost:9080
 npm run dev
 
-# build electron application for production
+# build electron application for production (需要连接vpn)
 npm run build
 
 # run unit & end-to-end tests

@@ -88,6 +88,7 @@
 
 <script>
   import { login } from '@/fetch/common.js'
+  import mac from 'getmac'
 
   export default {
     name: 'login',
@@ -107,7 +108,8 @@
             { required: true, message: '登錄密碼不能為空', trigger: 'blur' },
             { min: 6, message: '登錄密碼格式錯誤', trigger: 'blur' }
           ]
-        }
+        },
+        macAddress: ''
       }
     },
     components: {
@@ -121,26 +123,38 @@
         this.$refs[loginForm].validate((valid) => {
           if (valid) {
             this.loading = true
-            login(this.loginForm)
-              .then(res => {
-                this.loading = false
-                if (res.code === 200) {
-                  this.$message({ type: 'success', message: res.msg, showClose: true })
-                  localStorage.setItem('__TOKEN__', res.token)
-                  this.$router.push('/index')
-                } else {
-                  this.$message({ type: 'warning', message: res.msg, showClose: true })
-                }
-              })
-              .catch(err => {
-                console.log('err:', err)
-                this.$message.error('網絡超時，請檢查您的網絡狀態')
-                this.loading = false
-              })
+            this.getMacAddress(mac => {
+              this.loginForm.login_dev = mac
+              login(this.loginForm)
+                .then(res => {
+                  this.loading = false
+                  if (res.code === 200) {
+                    this.$message({ type: 'success', message: res.msg, showClose: true })
+                    localStorage.setItem('__TOKEN__', res.token)
+                    this.$router.push('/index')
+                  } else {
+                    this.$message({ type: 'warning', message: res.msg, showClose: true })
+                  }
+                })
+                .catch(err => {
+                  console.log('err:', err)
+                  this.$message.error('網絡超時，請檢查您的網絡狀態')
+                  this.loading = false
+                })
+            })
+
             return valid
           } else {
             return false
           }
+        })
+      },
+
+      getMacAddress (callback) {
+        mac.getMac((err, macAddress) => {
+          if (err) throw err
+          this.macAddress = macAddress
+          callback(macAddress)
         })
       },
 

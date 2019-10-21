@@ -5,6 +5,11 @@ export const login = (params) => {
   return fetchPost('/Home/AssistIndex/login', params)
 }
 
+// 登錄接口
+export const logout = () => {
+  return fetchTokenGet('/Home/AssistIndex/logout')
+}
+
 // 判斷賬號信息
 export const isUserInfo = () => {
   return fetchTokenGet('/Home/AssistIndex/isEndUser')
@@ -33,4 +38,14 @@ export const getFiveLog = () => {
 // 獲取開獎記錄
 export const getOpenLog = (params) => {
   return fetchTokenGet('/Home/AssistIndex/getOpenLog', params)
+}
+
+// 獲取提示
+export const getTips = () => {
+  return fetchTokenGet('/Home/AssistIndex/getTips')
+}
+
+// 獲取最低金額
+export const getMinMoney = () => {
+  return fetchTokenGet('/Home/AssistIndex/getMinMoney')
 }

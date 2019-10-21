@@ -51,8 +51,10 @@
       </el-form>
       <div class="tips ys-mb__40">
         <h3>溫馨提示</h3>
-        <p>1.倍投方式如當前購買的方向不正確，則下一期為當前期金額的3倍，如果中獎之後則會重置為開始金額；</p>
-        <p>2.當購買的連續几期未中獎之後，將預警。</p>
+        <p>1.預警期數的設定 為已連續同一方向開了 N 期后開始進行預警倍投操作。</p>
+        <p>2.下注方向輔助會自動為你選擇與開獎 N 期結果的相反方向進行下注。</p>
+        <p>3.下注金額可設定多期的金額，直到中獎后重新進行預警判斷，下注金額也會從第一注開始。</p>
+        <p>4.請保存設定操作后，再返回首頁進行啟動外掛。</p>
       </div>
     </div>
   </div>
@@ -72,7 +74,7 @@
         betsRules: {
           early: [
             { required: true, message: '請設置預警期數', trigger: 'blur' },
-            { pattern: /^[1-9]$|^[0-9][0-9]$|^100$/, message: '預警期數1-100之間', trigger: 'blur' }
+            { pattern: /^[1-9]$|^[0-9][0-9]$|^288$/, message: '預警期數1-288之間', trigger: 'blur' }
           ]
         }
       }
@@ -100,8 +102,8 @@
         }
 
         if (parseInt(this.betsFrom.early) < 1 ||
-          parseInt(this.betsFrom.early) > 100) {
-          this.$message({ type: 'warning', message: '設定期數必須在1-100之間', showClose: true })
+          parseInt(this.betsFrom.early) > 288) {
+          this.$message({ type: 'warning', message: '設定期數必須在1-288之間', showClose: true })
           return false
         }
 
