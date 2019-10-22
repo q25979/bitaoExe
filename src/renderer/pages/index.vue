@@ -323,6 +323,7 @@
             return 0
           }
         }
+        this.betEarlyStart = false
         this.betConfirm()
       },
 
@@ -370,10 +371,17 @@
         if (this.betData.moneyList[0].money === '') {
           this.$alert('請先設置普通倍投金額', '消息提示', { type: 'warning' })
           this.init()
+          return false
         }
 
         if (this.betData.moneyList[this.betBaseIndex].money === '') {
-          this.betBaseIndex = 0
+          if (this.betData.moneyList.length > 0) {
+            this.$alert('外掛已暫停', '消息提示', { type: 'warning' })
+            this.init()
+            return false
+          } else {
+            this.betBaseIndex = 0
+          }
         }
 
         var betData = this.betData
@@ -411,10 +419,13 @@
         if (this.betData.moneyList[0].money === '') {
           this.$alert('請先設置預警倍投金額', '消息提示', { type: 'warning' })
           this.init()
+          return false
         }
 
         if (this.betData.moneyList[this.betBaseIndex].money === '') {
-          this.betBaseIndex = 0
+          this.$alert('外掛已暫停', '消息提示', { type: 'warning' })
+          this.init()
+          return false
         }
 
         if (!this.betEarlyStart) {

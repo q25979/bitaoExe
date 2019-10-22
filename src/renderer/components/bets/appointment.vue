@@ -170,6 +170,7 @@
           })
           .catch(err => {
             console.log(err)
+            this.message({ type: 'warning', message: '設置普通倍投超時' })
           })
       },
 

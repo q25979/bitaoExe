@@ -62,6 +62,7 @@
 
 <script>
   import top from '@/components/index/top'
+  import { getMinMoney } from '@/fetch/common'
 
   export default {
     name: 'early',
@@ -93,33 +94,56 @@
     methods: {
       // 投注提交
       betsSubmit () {
-        for (let i in this.betsFrom.moneyList) {
-          if (this.betsFrom.moneyList[i].money !== '' &&
-            !/^[1-9]\d*$/.test(this.betsFrom.moneyList[i].money)) {
-            this.$message({ type: 'warning', message: '金額必須為大於0的整數，請修改錯誤', showClose: true })
-            return false
-          }
-        }
+        getMinMoney()
+          .then(res => {
+            if (res.code === 200) {
+              for (let i in this.betsFrom.moneyList) {
+                if (this.betsFrom.moneyList[i].money !== '' &&
+                  !/^[1-9]\d*$/.test(this.betsFrom.moneyList[i].money)) {
+                  this.$message({ type: 'warning', message: '金額必須為大於0的整數，請修改錯誤', showClose: true })
+                  return false
+                }
 
-        if (parseInt(this.betsFrom.early) < 1 ||
-          parseInt(this.betsFrom.early) > 288) {
-          this.$message({ type: 'warning', message: '設定期數必須在1-288之間', showClose: true })
-          return false
-        }
+                if (parseFloat(this.betsFrom.moneyList[i].money) < parseFloat(res.min_money)) {
+                  this.$message({ type: 'warning', message: '設置金額有誤，最低金額為：' + res.min_money, showClose: true })
+                  return false
+                }
 
-        this.$refs['betsFrom'].validate((valid) => {
-          if (valid) {
-            let token = localStorage.getItem('__TOKEN__')
-            if (token === null || token === 'null') {
-              this.$message({ type: 'warning', message: '登錄狀態不存在，請登錄賬號再進行操作', showClose: true })
-            } else {
-              localStorage.setItem(token + '_early', JSON.stringify(this.betsFrom))
-              this.$message.success({ message: '數據設置成功', showClose: true })
+                if (this.betsFrom.moneyList[i].money === '') {
+                  for (let j = i; j < this.betsFrom.moneyList.length; j++) {
+                    if (this.betsFrom.moneyList[j].money !== '') {
+                      this.$message({ type: 'warning', message: '數據設置有誤，必須按順序設置數據', showClose: true })
+                      return false
+                    }
+                  }
+                }
+              }
+
+              if (parseInt(this.betsFrom.early) < 1 ||
+                parseInt(this.betsFrom.early) > 288) {
+                this.$message({ type: 'warning', message: '設定期數必須在1-288之間', showClose: true })
+                return false
+              }
+
+              this.$refs['betsFrom'].validate((valid) => {
+                if (valid) {
+                  let token = localStorage.getItem('__TOKEN__')
+                  if (token === null || token === 'null') {
+                    this.$message({ type: 'warning', message: '登錄狀態不存在，請登錄賬號再進行操作', showClose: true })
+                  } else {
+                    localStorage.setItem(token + '_early', JSON.stringify(this.betsFrom))
+                    this.$message.success({ message: '數據設置成功', showClose: true })
+                  }
+                } else {
+                  return false
+                }
+              })
             }
-          } else {
-            return false
-          }
-        })
+          })
+          .catch(err => {
+            console.log(err)
+            this.message({ type: 'warning', message: '設置預警倍投超時' })
+          })
       },
 
       // 初始化數據
