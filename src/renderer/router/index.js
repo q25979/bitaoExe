@@ -7,7 +7,7 @@ import routers from './router'
 import { Message } from 'element-ui'
 
 // api
-import { isUserInfo } from '@/fetch/common.js'
+import { isUserInfo } from '@/fetch/common'
 
 Vue.use(Router)
 

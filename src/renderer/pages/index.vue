@@ -202,9 +202,9 @@
     methods: {
       // 初始化
       init () {
-        clearInterval(this.timer)
         this.$store.dispatch('updateStartStatus', false)
         this.startText = '啟動外掛'
+        clearInterval(this.timer)
         clearInterval(this.orderTimer)
         this.getHistory()
         this.orderTimer = setInterval(this.getHistory, 1000 * 60 * 2)
@@ -315,11 +315,14 @@
         let data = localStorage.getItem(token + name)
         if (data === null || data === 'null') {
           this.$message({ type: 'warning', message: message + '未設定金額，暫停輔助', showClose: true })
+          this.init()
+          return 0
         } else {
           try {
             this.betData = JSON.parse(data)
           } catch (err) {
             this.$message({ type: 'warning', message: message + '未設定金額，暫停輔助', showClose: true })
+            this.init()
             return 0
           }
         }

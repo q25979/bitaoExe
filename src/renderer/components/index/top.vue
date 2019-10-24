@@ -45,7 +45,12 @@
       }
     },
     created () {
+      clearInterval(this.timer)
       this.getInfo()
+      this.timer = setInterval(this.getInfo, 3000)
+    },
+    beforeDestroy () {
+      clearInterval(this.timer)
     },
     methods: {
       // 註銷
@@ -57,7 +62,6 @@
         }).then(() => {
           logout()
             .then(res => {
-              console.log(res)
               if (res.code === 200) {
                 this.$store.dispatch('updateStartStatus', false)
                 localStorage.removeItem('__TOKEN__')
@@ -77,9 +81,23 @@
       getInfo () {
         getUserInfo()
           .then(res => {
-            this.time = res.time
-            this.isActivate = res.activate
-            this.username = res.user_name
+            if (res.code === 200) {
+              this.time = res.time
+              this.isActivate = res.activate
+              this.username = res.user_name
+            } else {
+              logout()
+                .then(res => {
+                  this.$message({ type: 'warning', message: '登錄狀態不存在，請重新登錄', showClose: true })
+                  this.$store.dispatch('updateStartStatus', false)
+                  localStorage.removeItem('__TOKEN__')
+                  this.$router.push('/')
+                })
+                .catch((err) => {
+                  console.log(err)
+                  this.$message({ type: 'warning', message: '登出超時' })
+                })
+            }
           })
           .catch(err => {
             console.log('err:', err)

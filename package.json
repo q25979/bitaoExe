@@ -22,7 +22,7 @@
     "postinstall": "npm run lint:fix"
   },
   "build": {
-    "productName": "聚多幣",
+    "productName": "外掛",
     "appId": "com.example.yourapp",
     "directories": {
       "output": "build"

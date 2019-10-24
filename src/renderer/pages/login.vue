@@ -127,6 +127,7 @@
               this.loginForm.login_dev = mac
               login(this.loginForm)
                 .then(res => {
+                  console.log(res)
                   this.loading = false
                   if (res.code === 200) {
                     this.$message({ type: 'success', message: res.msg, showClose: true })
