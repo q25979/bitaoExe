@@ -47,7 +47,7 @@
     created () {
       clearInterval(this.timer)
       this.getInfo()
-      this.timer = setInterval(this.getInfo, 3000)
+      this.timer = setInterval(this.getInfo, 1000 * 5)
     },
     beforeDestroy () {
       clearInterval(this.timer)

@@ -69,7 +69,7 @@
         <router-link tag="el-button" to="/appointment">預約下注</router-link>
         <router-link tag="el-button" to="/early">預警倍投</router-link>
         <router-link tag="el-button" to="/base">普通倍投</router-link>
-        <el-button @click="getHistory">刷新數據</el-button>
+        <el-button @click="getHistory()">刷新數據</el-button>
       </div>
       <div class="assist-box" v-if="startStatus">
         <ul>
@@ -207,7 +207,7 @@
         clearInterval(this.timer)
         clearInterval(this.orderTimer)
         this.getHistory()
-        this.orderTimer = setInterval(this.getHistory, 1000 * 60 * 2)
+        this.orderTimer = setInterval(this.getHistory, 1000 * 60)
 
         document.body.onclick = () => {
           this.startStatus = false
@@ -226,7 +226,7 @@
       },
 
       // 獲取交易記錄
-      getHistory () {
+      getHistory (callback) {
         getDealLog(this.optionData)
           .then(res => {
             if (res.code === 0) {
@@ -236,6 +236,10 @@
               this.balance = res.balance
               this.curdata = res.curdata
               this.curnumber = res.curnumber
+
+              if (callback) {
+                callback()
+              }
             } else {
               this.$mesage({ type: 'warning', message: res.msg })
             }
@@ -358,9 +362,11 @@
           if (this.betData[i].bet_number !== '' &&
             this.betData[i].buy_direction !== '' &&
             this.betData[i].money !== '') {
-            if (parseInt(this.curnumber) === parseInt(this.betData[i].bet_number)) {
-              this.betRequset(this.betData[i])
-            }
+            this.getHistory(() => {
+              if (parseInt(this.curnumber) === parseInt(this.betData[i].bet_number)) {
+                this.betRequset(this.betData[i])
+              }
+            })
           }
         }
       },
@@ -377,16 +383,6 @@
           return false
         }
 
-        if (this.betData.moneyList[this.betBaseIndex].money === '') {
-          if (this.betData.moneyList.length > 0) {
-            this.$alert('外掛已暫停', '消息提示', { type: 'warning' })
-            this.init()
-            return false
-          } else {
-            this.betBaseIndex = 0
-          }
-        }
-
         var betData = this.betData
         betData.bet_number = this.curnumber
         betData.money = this.betData.moneyList[this.betBaseIndex].money
@@ -400,12 +396,17 @@
             if (res.data.length > 0) {
               if (parseInt(res.data[0].last_money) > 0) {
                 this.betBaseIndex = 0
+                betData.money = this.betData.moneyList[this.betBaseIndex].money
               }
+
+              if (this.isStopProgram(this.betBaseIndex)) return false
               this.betRequset(betData, res => {
                 this.betBaseIndex++
               })
             } else {
               this.betBaseIndex = 0
+              betData.money = this.betData.moneyList[this.betBaseIndex].money
+              if (this.isStopProgram(this.betBaseIndex)) return false
               this.betRequset(betData, res => {
                 this.betBaseIndex++
               })
@@ -421,12 +422,6 @@
 
         if (this.betData.moneyList[0].money === '') {
           this.$alert('請先設置預警倍投金額', '消息提示', { type: 'warning' })
-          this.init()
-          return false
-        }
-
-        if (this.betData.moneyList[this.betBaseIndex].money === '') {
-          this.$alert('外掛已暫停', '消息提示', { type: 'warning' })
           this.init()
           return false
         }
@@ -449,6 +444,8 @@
                     ? 0 : 1
                   betData.buy_direction = this.betEarlyDirection
                   betData.money = this.betData.moneyList[this.betEarlyIndex].money
+
+                  if (this.isStopProgram(this.betEarlyIndex)) return false
                   this.betRequset(betData, res => {
                     this.betEarlyIndex++
                   })
@@ -469,6 +466,8 @@
               } else {
                 betData.buy_direction = this.betEarlyDirection
                 betData.money = this.betData.moneyList[this.betEarlyIndex].money
+
+                if (this.isStopProgram(this.betEarlyIndex)) return false
                 this.betRequset(betData, res => {
                   this.betEarlyIndex++
                 })
@@ -479,6 +478,18 @@
             }
           })
         }
+      },
+
+      // 外掛暫停
+      isStopProgram (index) {
+        if (this.betData.moneyList[index].money === '') {
+          if (this.betData.moneyList.length > 0) {
+            this.$alert('外掛已暫停', '消息提示', { type: 'warning' })
+            this.init()
+            return true
+          }
+        }
+        return false
       },
 
       // 獲取五期記錄
@@ -499,24 +510,27 @@
 
       // 投注請求
       betRequset (betData, callback) {
-        betOrder(betData)
-          .then(res => {
-            if (res.code === 200) {
-              this.$message.success(res.msg)
-              this.getHistory()
-              if (callback) callback(res)
-            } else if (res.code === 2000) {
-              console.log('已經購買過，無須再購買')
-            } else {
-              this.$alert(res.msg, '消息提示', { type: 'warning' })
+        this.getHistory(() => {
+          if (this.startType !== 1) betData.bet_number = this.curnumber
+          betOrder(betData)
+            .then(res => {
+              if (res.code === 200) {
+                this.$message.success(res.msg)
+                this.getHistory()
+                if (callback) callback(res)
+              } else if (res.code === 2000) {
+                console.log('已經購買過，無須再購買')
+              } else {
+                this.$alert(res.msg, '消息提示', { type: 'warning' })
+                this.init()
+              }
+            })
+            .catch(err => {
+              console.log('err:', err)
+              this.$alert('外掛下單錯誤，已停止運行如果多次發生此類情況請聯繫客服處理', '外掛出現錯誤', { type: 'error' })
               this.init()
-            }
-          })
-          .catch(err => {
-            console.log('err:', err)
-            this.$alert('外掛下單錯誤，已停止運行如果多次發生此類情況請聯繫客服處理', '外掛出現錯誤', { type: 'error' })
-            this.init()
-          })
+            })
+        })
       },
 
       // 判斷外掛是否在啟動中
