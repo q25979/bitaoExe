@@ -49,3 +49,8 @@ export const getTips = () => {
 export const getMinMoney = () => {
   return fetchTokenGet('/Home/AssistIndex/getMinMoney')
 }
+
+// 獲取最低金額
+export const getTime = () => {
+  return fetchTokenGet('/Home/AssistIndex/getTime')
+}

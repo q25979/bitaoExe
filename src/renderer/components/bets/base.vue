@@ -25,11 +25,11 @@
     <div class="center ys-container">
       <h1>普通倍投</h1>
       <el-form label-width="80px" :model="betsFrom" :rules="betsRules" ref="betsFrom">
-        <el-form-item label="預警期數" prop="bet_number">
+        <el-form-item label="啟動期數" prop="bet_number">
           <el-input
             clearValidate
             v-model="betsFrom.bet_number"
-            placeholder="請輸入下注期數，最多設置30期"
+            placeholder="請輸入啟動期數，範圍1-288期"
             type="number">
           </el-input>
         </el-form-item>

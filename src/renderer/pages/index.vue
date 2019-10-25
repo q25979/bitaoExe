@@ -148,7 +148,8 @@
     betOrder,
     getFiveLog,
     getOpenLog,
-    getTips
+    getTips,
+    getTime
   } from '@/fetch/common.js'
 
   export default {
@@ -178,7 +179,8 @@
         betEarlyDirection: 0,
         timer: null,
         orderTimer: null,
-        tips: ''
+        tips: '',
+        timeTimer: null
       }
     },
     components: {},
@@ -198,6 +200,7 @@
     beforeDestroy () {
       clearInterval(this.timer)
       clearInterval(this.orderTimer)
+      clearTimeout(this.timeTimer)
     },
     methods: {
       // 初始化
@@ -205,6 +208,7 @@
         this.$store.dispatch('updateStartStatus', false)
         this.startText = '啟動外掛'
         clearInterval(this.timer)
+        clearTimeout(this.timeTimer)
         clearInterval(this.orderTimer)
         this.getHistory()
         this.orderTimer = setInterval(this.getHistory, 1000 * 60)
@@ -331,7 +335,20 @@
           }
         }
         this.betEarlyStart = false
-        this.betConfirm()
+
+        clearTimeout(this.timeTimer)
+        getTime()
+          .then(res => {
+            this.timeTimer = setTimeout(() => {
+              this.betConfirm()
+            }, parseInt(res.countdown) * 1000)
+          })
+          .catch(err => {
+            console.log('getTime:', err)
+            this.$message({ type: 'warning', message: '網絡超時，啟動輔助失敗', showClose: true })
+            this.init()
+            return 0
+          })
       },
 
       // 確認投注
