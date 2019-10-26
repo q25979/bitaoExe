@@ -68,7 +68,7 @@
   <div id="login">
     <div class="center ys-container">
       <div class="tips">溫馨提示：
-        <p>為保證下注期數與官方實時同步，請每次更換下注模式都必須退出賬戶開關程序，重新在桌面打開進行操作！</p>
+        <p>為保證下注期數與官方實時同步，請每次更換下注模式都必須退出賬戶關閉程序，重新在桌面打開進行操作！</p>
       </div>
       <div class="box" v-loading="loading">
         <h1 class="title">輔助登錄</h1>
