@@ -334,7 +334,9 @@
             return 0
           }
         }
+        // 重置狀態
         this.betEarlyStart = false
+        this.betBaseIndex = 0
 
         clearTimeout(this.timeTimer)
         getTime()

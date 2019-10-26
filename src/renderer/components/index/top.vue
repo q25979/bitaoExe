@@ -101,7 +101,6 @@
           })
           .catch(err => {
             console.log('err:', err)
-            this.$message({ type: 'warning', message: '獲取用戶信息失敗，請聯繫客服' })
           })
       }
     }

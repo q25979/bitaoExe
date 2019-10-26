@@ -169,7 +169,6 @@
           let obj = { money: '' }
           this.betsFrom.moneyList.push(obj)
         }
-        console.log(this.betsFrom)
       }
     }
   }
