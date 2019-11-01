@@ -1,4 +1,4 @@
-# bitao-assist
+# assist
 
 > An electron-vue project
 

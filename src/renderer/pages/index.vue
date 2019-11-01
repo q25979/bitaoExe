@@ -174,6 +174,7 @@
         curnumber: 0,
         betData: {},
         betBaseIndex: 0,
+        baseNumber: 1, // 基礎期數
         betEarlyIndex: 0,
         betEarlyStart: false,
         betEarlyDirection: 0,
@@ -328,6 +329,7 @@
         } else {
           try {
             this.betData = JSON.parse(data)
+            if (this.startType === 3) this.baseNumber = this.betData.bet_number
           } catch (err) {
             this.$message({ type: 'warning', message: message + '未設定金額，暫停輔助', showClose: true })
             this.init()
@@ -392,7 +394,8 @@
 
       // 普通倍投
       baseBet () {
-        if (parseInt(this.curnumber) < parseInt(this.betData.bet_number)) {
+        if (parseInt(this.baseNumber) - parseInt(this.curnumber) > 0) {
+          console.log('進來了')
           return false
         }
 
@@ -402,12 +405,12 @@
           return false
         }
 
-        var betData = this.betData
-        betData.bet_number = this.curnumber
-        betData.money = this.betData.moneyList[this.betBaseIndex].money
+        var requestData = this.betData
+        requestData.bet_number = this.curnumber
+        requestData.money = this.betData.moneyList[this.betBaseIndex].money
 
         if (this.betBaseIndex === 0) {
-          this.betRequset(betData, res => {
+          this.betRequset(requestData, res => {
             this.betBaseIndex++
           })
         } else {
@@ -415,18 +418,18 @@
             if (res.data.length > 0) {
               if (parseInt(res.data[0].last_money) > 0) {
                 this.betBaseIndex = 0
-                betData.money = this.betData.moneyList[this.betBaseIndex].money
+                requestData.money = this.betData.moneyList[this.betBaseIndex].money
               }
 
               if (this.isStopProgram(this.betBaseIndex)) return false
-              this.betRequset(betData, res => {
+              this.betRequset(requestData, res => {
                 this.betBaseIndex++
               })
             } else {
               this.betBaseIndex = 0
-              betData.money = this.betData.moneyList[this.betBaseIndex].money
+              requestData.money = this.betData.moneyList[this.betBaseIndex].money
               if (this.isStopProgram(this.betBaseIndex)) return false
-              this.betRequset(betData, res => {
+              this.betRequset(requestData, res => {
                 this.betBaseIndex++
               })
             }
@@ -529,9 +532,11 @@
 
       // 投注請求
       betRequset (betData, callback) {
+        var requestData = betData
+
         this.getHistory(() => {
-          if (this.startType !== 1) betData.bet_number = this.curnumber
-          betOrder(betData)
+          if (this.startType !== 1) requestData.bet_number = this.curnumber
+          betOrder(requestData)
             .then(res => {
               if (res.code === 200) {
                 this.$message.success(res.msg)
